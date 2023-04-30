@@ -7,10 +7,17 @@ function createCopyButton() {
     console.debug('Button clicked');
 
     try {
-      const targetElement = document.getElementById('product-attributes');
-      const properties = extractProperties(targetElement);
-      console.debug('Properties extracted:', properties);
 
+      const datasheetElement = findMatchingElement();
+
+
+
+      const targetElement = document.getElementById('product-attributes');
+      let properties = extractProperties(targetElement);
+      console.debug('Properties extracted:', properties);
+      if (matchingElement) {
+        properties["Datasheet"]=datasheetElement.href;
+      }
       const dataToCopy = convertToMathematicaList(properties);
       console.debug('Data converted to Mathematica list:', dataToCopy);
 
@@ -21,7 +28,42 @@ function createCopyButton() {
     }
   });
 
+
+
+  const matchingElement = findMatchingElement();
+
+  if (matchingElement) {
+
+    console.log("Matching element found:", matchingElement);
+
+    const datasheetButton = document.createElement("button");
+    datasheetButton.textContent = "Copy";
+    datasheetButton.style.marginLeft = "10px";
+    matchingElement.parentNode.insertBefore(datasheetButton,matchingElement);
+
+    datasheetButton.addEventListener('click', async () => {
+      console.debug('Button clicked');
+      try {
+
+        const matchingElement = findMatchingElement();
+
+        await navigator.clipboard.writeText(matchingElement.href);
+        console.debug('Data copied to clipboard:', matchingElement.href);
+      } catch (error) {
+        console.error('Error copying to clipboard:', error);
+      }
+    });
+
+
+  } else {
+
+    console.log("No matching element found");
+
+  }
+
+
   return button;
+
 }
 
 function injectButtonBeforeTargetElement() {
@@ -34,10 +76,60 @@ function injectButtonBeforeTargetElement() {
     } else {
       console.error('Target element not found');
     }
+
+
+
   } else {
     console.error('document.dir is undefined');
   }
+
 }
+
+
+function jsonToTsv(json) {
+  const keys = Object.keys(json[0]);
+  const header = keys.join('\t');
+  const rows = json.map(obj => keys.map(key => obj[key]).join('\t')).join('\n');
+  return header + '\n' + rows;
+}
+
+function convertToMathematicaList(jsObject) {
+  const mathematicaList = [];
+
+  for (const [key, value] of Object.entries(jsObject)) {
+    const formattedValue = value === 'Nothing' ? 'None' : `"${value.replace(/"/g, '\\"')}"`;
+    const formattedKey = key.replace(/"/g, '\\"');
+    mathematicaList.push(`{"${formattedKey}", ${formattedValue}}`);
+  }
+
+  return `{${mathematicaList.join(', ')}}`;
+}
+
+
+function findMatchingElement() {
+  const elements = document.querySelectorAll('[data-testid="datasheet-download"]');
+  const regex = /.+Datasheet\ top.*/;
+
+  for (const element of elements) {
+    const trackData = element.getAttribute('track-data');
+
+    if (trackData && regex.test(trackData)) {
+      return element;
+    }
+  }
+
+  return null; // No matching element found
+}
+
+const matchingElement = findMatchingElement();
+if (matchingElement) {
+  console.log('Matching element found:', matchingElement);
+} else {
+  console.log('No matching element found');
+}
+
+
+
 
 // Wait for the page to load before injecting the button
 window.addEventListener('DOMContentLoaded', injectButtonBeforeTargetElement);
@@ -58,14 +150,5 @@ function extractProperties(tableElement) {
   return properties;
 }
 
-function convertToMathematicaList(jsObject) {
-  const mathematicaList = [];
 
-  for (const [key, value] of Object.entries(jsObject)) {
-    const formattedValue = value === 'Nothing' ? 'None' : `"${value.replace(/"/g, '\\"')}"`;
-    const formattedKey = key.replace(/"/g, '\\"');
-    mathematicaList.push(`{"${formattedKey}", ${formattedValue}}`);
-  }
 
-  return `{${mathematicaList.join(', ')}}`;
-}
