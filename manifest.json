@@ -6,7 +6,7 @@
   "icons": {
     "48": "icons/icon-48.png"
   },
-  "permissions":  ["activeTab", "storage", "<all_urls>", "tabs", "contextMenus", "https://*/*", "http://*/*"],
+  "permissions":  ["storage","activeTab", "storage", "<all_urls>", "tabs", "contextMenus", "https://*/*", "http://*/*"],
   "content_scripts": [
     {
       "matches": ["https://www.digikey.com.au/en/products/detail/*" ],
@@ -16,7 +16,7 @@
     }
   ],
   "background": {
-    "scripts": ["background-script.js"],
+    "scripts": [" background-script.js"],
     "persistent": true
   },
   "browser_action": {

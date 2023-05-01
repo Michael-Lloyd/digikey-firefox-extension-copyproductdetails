@@ -1,3 +1,10 @@
+
+
+function getSelectedMode() {
+  return this.localStorage.getItem("selectedMode")
+    .then(({ selectedMode }) => selectedMode);
+}
+
 function createCopyButton() {
   const button = document.createElement('button');
   button.innerText = 'Copy to Clipboard';
@@ -18,7 +25,14 @@ function createCopyButton() {
       if (matchingElement) {
         properties["Datasheet"]=datasheetElement.href;
       }
-      const dataToCopy = convertToMathematicaList(properties);
+      let dataToCopy="Null";
+      getSelectedMode().then(selectedMode => { 
+        if(selectedMode == "Mathematica") { 
+          dataToCopy = convertToMathematicaList(properties);
+        } else if(selectedMode == "CSV") { 
+          dataToCopy = jsonToTsv(properties);
+        } 
+      });
       console.debug('Data converted to Mathematica list:', dataToCopy);
 
       await navigator.clipboard.writeText(dataToCopy);
