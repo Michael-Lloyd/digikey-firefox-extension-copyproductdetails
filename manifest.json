@@ -23,6 +23,11 @@
     "default_icon": "icons/icon-48.png",
     "default_popup": "popup.html",
     "default_title": "Digikey Data Extractor"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "some-name@example.org"
+    }
   }
 }
 
